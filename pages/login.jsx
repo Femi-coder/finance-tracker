@@ -20,9 +20,9 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem('userEmail', data.email);
+        localStorage.setItem('userEmail', email);
         alert('Login successful!');
-        router.push('/'); // ✅ Redirect to dashboard
+        router.push('/'); // Redirect to dashboard
       } else {
         alert(data.error || 'Login failed');
       }

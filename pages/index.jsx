@@ -10,26 +10,28 @@ export default function Dashboard() {
   const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
-    const storedEmail = localStorage.getItem('userEmail');
-
-    if (!storedEmail) {
-      router.push('/login');
-    } else {
-      setUserEmail(storedEmail);
-      fetchTransactions();
+    // Wait for the client to be ready
+    if (typeof window !== 'undefined') {
+      const storedEmail = localStorage.getItem('userEmail');
+      if (!storedEmail) {
+        router.push('/login');
+      } else {
+        setUserEmail(storedEmail);
+        fetchTransactions(storedEmail);
+      }
     }
   }, []);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (email) => {
     try {
-      const res = await fetch(`/api/transactions?email=${localStorage.getItem('userEmail')}`);
+      const res = await fetch(`/api/transactions?email=${email}`);
       const data = await res.json();
 
       if (Array.isArray(data)) {
         setTransactions(data);
       } else {
-        console.error('Data is not an array:', data);
         setTransactions([]);
+        console.error('Expected array, got:', data);
       }
     } catch (err) {
       console.error('Error fetching transactions:', err);
@@ -57,8 +59,10 @@ export default function Dashboard() {
       <Navbar />
       <div className="p-6 bg-gray-100 min-h-screen">
         <h1 className="text-2xl font-bold mb-2 text-gray-800">Dashboard</h1>
-        {userEmail && (
+        {userEmail ? (
           <p className="mb-6 text-gray-700 font-semibold">Welcome back, {userEmail}!</p>
+        ) : (
+          <p className="mb-6 text-gray-400 italic">Checking user...</p>
         )}
 
         {/* Summary Section */}
