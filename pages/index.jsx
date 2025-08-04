@@ -8,9 +8,9 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
+  const [checkingAuth, setCheckingAuth] = useState(true); // prevent initial flicker
 
   useEffect(() => {
-    // Wait for the client to be ready
     if (typeof window !== 'undefined') {
       const storedEmail = localStorage.getItem('userEmail');
       if (!storedEmail) {
@@ -18,6 +18,7 @@ export default function Dashboard() {
       } else {
         setUserEmail(storedEmail);
         fetchTransactions(storedEmail);
+        setCheckingAuth(false);
       }
     }
   }, []);
@@ -30,8 +31,8 @@ export default function Dashboard() {
       if (Array.isArray(data)) {
         setTransactions(data);
       } else {
-        setTransactions([]);
         console.error('Expected array, got:', data);
+        setTransactions([]);
       }
     } catch (err) {
       console.error('Error fetching transactions:', err);
@@ -54,6 +55,14 @@ export default function Dashboard() {
     tx.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-gray-600">Checking authentication...</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <Navbar />
@@ -69,15 +78,15 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="bg-green-100 text-green-800 p-4 rounded shadow text-center">
             <p className="text-lg font-semibold">Total Income</p>
-            <p className="text-xl font-bold">€{totalIncome}</p>
+            <p className="text-xl font-bold">€{totalIncome.toFixed(2)}</p>
           </div>
           <div className="bg-red-100 text-red-800 p-4 rounded shadow text-center">
             <p className="text-lg font-semibold">Total Expenses</p>
-            <p className="text-xl font-bold">€{totalExpense}</p>
+            <p className="text-xl font-bold">€{totalExpense.toFixed(2)}</p>
           </div>
           <div className="bg-blue-100 text-blue-800 p-4 rounded shadow text-center">
             <p className="text-lg font-semibold">Balance</p>
-            <p className="text-xl font-bold">€{balance}</p>
+            <p className="text-xl font-bold">€{balance.toFixed(2)}</p>
           </div>
         </div>
 
@@ -87,7 +96,7 @@ export default function Dashboard() {
           placeholder="Search by description..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="mb-6 w-full max-w-md px-4 py-2 border rounded shadow-sm"
+          className="mb-6 w-full max-w-md px-4 py-2 border rounded bg-white text-gray-800 shadow-sm"
         />
 
         {/* Transactions List */}
@@ -110,7 +119,7 @@ export default function Dashboard() {
                       tx.type === 'income' ? 'text-green-600' : 'text-red-600'
                     }`}
                   >
-                    {tx.type}: €{tx.amount} — {tx.description}
+                    {tx.type}: €{tx.amount.toFixed(2)} — {tx.description}
                   </p>
                   <p className="text-sm text-gray-500">
                     {new Date(tx.date).toLocaleString()}

@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 export default function Navbar() {
@@ -13,29 +13,32 @@ export default function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem('userEmail');
-    alert('Logged out!');
+    setIsLoggedIn(false);
     router.push('/login');
   };
 
   return (
-    <nav className="bg-blue-600 text-white p-4 flex gap-6">
-      <Link href="/">Home</Link>
-      {isLoggedIn && (
-        <>
-          <Link href="/add">Add</Link>
-          <Link href="/income">Income</Link>
-          <Link href="/expenses">Expenses</Link>
-          <button onClick={handleLogout} className="ml-auto text-sm underline">
-            Logout
-          </button>
-        </>
-      )}
-      {!isLoggedIn && (
-        <>
-          <Link href="/login">Login</Link>
-          <Link href="/register">Register</Link>
-        </>
-      )}
+    <nav className="bg-white shadow p-4 flex justify-between items-center">
+      <div className="space-x-4">
+        {isLoggedIn && (
+          <>
+            <Link href="/" className="text-blue-600 hover:underline">Home</Link>
+            <Link href="/income" className="text-blue-600 hover:underline">Income</Link>
+            <Link href="/expenses" className="text-blue-600 hover:underline">Expenses</Link>
+            <Link href="/add" className="text-blue-600 hover:underline">Add</Link>
+          </>
+        )}
+      </div>
+      <div>
+        {isLoggedIn ? (
+          <button onClick={handleLogout} className="text-red-600 hover:underline">Logout</button>
+        ) : (
+          <>
+            <Link href="/login" className="text-blue-600 hover:underline">Login</Link>
+            <Link href="/register" className="ml-4 text-blue-600 hover:underline">Register</Link>
+          </>
+        )}
+      </div>
     </nav>
   );
 }
