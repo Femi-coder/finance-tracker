@@ -18,27 +18,31 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow p-4 flex justify-between items-center">
+    <nav className="bg-blue-600 p-4 flex justify-between items-center">
       <div className="space-x-4">
+        <Link href="/" className="text-white hover:underline">Home</Link>
+        {!isLoggedIn && (
+          <>
+            <Link href="/login" className="text-white hover:underline">Login</Link>
+            <Link href="/register" className="text-white hover:underline">Register</Link>
+          </>
+        )}
         {isLoggedIn && (
           <>
-            <Link href="/" className="text-blue-600 hover:underline">Home</Link>
-            <Link href="/income" className="text-blue-600 hover:underline">Income</Link>
-            <Link href="/expenses" className="text-blue-600 hover:underline">Expenses</Link>
-            <Link href="/add" className="text-blue-600 hover:underline">Add</Link>
+            <Link href="/income" className="text-white hover:underline">Income</Link>
+            <Link href="/expenses" className="text-white hover:underline">Expenses</Link>
+            <Link href="/add" className="text-white hover:underline">Add</Link>
           </>
         )}
       </div>
-      <div>
-        {isLoggedIn ? (
-          <button onClick={handleLogout} className="text-red-600 hover:underline">Logout</button>
-        ) : (
-          <>
-            <Link href="/login" className="text-blue-600 hover:underline">Login</Link>
-            <Link href="/register" className="ml-4 text-blue-600 hover:underline">Register</Link>
-          </>
-        )}
-      </div>
+      {isLoggedIn && (
+        <button
+          onClick={handleLogout}
+          className="text-white hover:underline"
+        >
+          Logout
+        </button>
+      )}
     </nav>
   );
 }
