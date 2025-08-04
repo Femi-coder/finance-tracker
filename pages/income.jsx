@@ -20,9 +20,9 @@ export default function IncomePage() {
         const data = await res.json();
         const filtered = data.filter((txn) => txn.type === 'income');
         setIncome(filtered);
-        setLoading(false);
       } catch (err) {
         console.error('Error fetching income:', err);
+      } finally {
         setLoading(false);
       }
     };
@@ -31,6 +31,27 @@ export default function IncomePage() {
   }, []);
 
   const totalIncome = income.reduce((sum, tx) => sum + tx.amount, 0);
+
+  const handleDelete = async (id) => {
+    const confirmDelete = confirm("Are you sure you want to delete this income?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/deleteTransaction?id=${id}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        alert('Income deleted!');
+        setIncome((prev) => prev.filter((txn) => txn._id !== id));
+      } else {
+        alert('Failed to delete income');
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Something went wrong.');
+    }
+  };
 
   return (
     <>
@@ -48,14 +69,22 @@ export default function IncomePage() {
             {income.map((txn) => (
               <li
                 key={txn._id}
-                className="bg-white p-4 rounded shadow border-l-4 border-green-500"
+                className="bg-white p-4 rounded shadow border-l-4 border-green-500 flex justify-between items-center"
               >
-                <p className="text-green-600 font-semibold">
-                  €{txn.amount} — {txn.description}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {new Date(txn.date).toLocaleDateString()}
-                </p>
+                <div>
+                  <p className="text-green-600 font-semibold">
+                    €{txn.amount} — {txn.description}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(txn.date).toLocaleDateString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDelete(txn._id)}
+                  className="text-sm text-red-500 hover:text-red-700"
+                >
+                  Delete
+                </button>
               </li>
             ))}
           </ul>

@@ -12,9 +12,9 @@ export default async function handler(req, res) {
     const collection = db.collection('transactions');
 
     if (req.method === 'POST') {
-      const { type, amount, description, email } = req.body;
+      const { type, amount, description, category, email } = req.body;
 
-      if (!type || !amount || !description || !email) {
+      if (!type || !amount || !description || !category || !email) {
         return res.status(400).json({ error: 'Missing data' });
       }
 
@@ -22,6 +22,7 @@ export default async function handler(req, res) {
         type,
         amount,
         description,
+        category,
         email,
         date: new Date(),
       };

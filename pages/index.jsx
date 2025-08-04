@@ -8,18 +8,18 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
-  const [checkingAuth, setCheckingAuth] = useState(true); // prevent initial flicker
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [incomeCategoryFilter, setIncomeCategoryFilter] = useState('');
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedEmail = localStorage.getItem('userEmail');
-      if (!storedEmail) {
-        router.push('/login');
-      } else {
-        setUserEmail(storedEmail);
-        fetchTransactions(storedEmail);
-        setCheckingAuth(false);
-      }
+    const email = localStorage.getItem('userEmail');
+    if (!email) {
+      router.push('/login');
+    } else {
+      setUserEmail(email);
+      fetchTransactions(email);
+      setCheckingAuth(false);
     }
   }, []);
 
@@ -51,9 +51,17 @@ export default function Dashboard() {
 
   const balance = totalIncome - totalExpense;
 
-  const filteredTransactions = transactions.filter((tx) =>
+  const filtered = transactions.filter((tx) =>
     tx.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // 🔍 Group by category
+  const groupedByCategory = filtered.reduce((groups, tx) => {
+    const cat = tx.category || 'Uncategorized';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(tx);
+    return groups;
+  }, {});
 
   if (checkingAuth) {
     return (
@@ -68,11 +76,7 @@ export default function Dashboard() {
       <Navbar />
       <div className="p-6 bg-gray-100 min-h-screen">
         <h1 className="text-2xl font-bold mb-2 text-gray-800">Dashboard</h1>
-        {userEmail ? (
-          <p className="mb-6 text-gray-700 font-semibold">Welcome back, {userEmail}!</p>
-        ) : (
-          <p className="mb-6 text-gray-400 italic">Checking user...</p>
-        )}
+        <p className="mb-6 text-gray-700 font-semibold">Welcome back, {userEmail}!</p>
 
         {/* Summary Section */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -99,35 +103,131 @@ export default function Dashboard() {
           className="mb-6 w-full max-w-md px-4 py-2 border rounded bg-white text-gray-800 shadow-sm"
         />
 
-        {/* Transactions List */}
         {loading ? (
           <p>Loading...</p>
-        ) : filteredTransactions.length === 0 ? (
-          <p className="text-gray-600">No matching transactions found.</p>
         ) : (
-          <ul className="space-y-3">
-            {filteredTransactions.map((tx) => (
-              <li
-                key={tx._id}
-                className={`flex justify-between items-center bg-white p-4 rounded shadow border-l-4 ${
-                  tx.type === 'income' ? 'border-green-500' : 'border-red-500'
-                }`}
-              >
-                <div>
-                  <p
-                    className={`font-semibold ${
-                      tx.type === 'income' ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
-                    {tx.type}: €{tx.amount.toFixed(2)} — {tx.description}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(tx.date).toLocaleString()}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="space-y-10">
+            {/* INCOME GROUP */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-2xl font-bold text-green-700">Income</h2>
+                <select
+                  value={incomeCategoryFilter}
+                  onChange={(e) => setIncomeCategoryFilter(e.target.value)}
+                  className="px-3 py-1 border rounded bg-white text-gray-800"
+                >
+                  <option value="">All Categories</option>
+                  <option value="Salary">Salary</option>
+                  <option value="Bonus">Bonus</option>
+                  <option value="Investments">Investments</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {Object.entries(groupedByCategory)
+                .filter(([_, txns]) =>
+                  txns.some(
+                    (tx) =>
+                      tx.type === 'income' &&
+                      (incomeCategoryFilter === '' || tx.category === incomeCategoryFilter)
+                  )
+                )
+                .map(([category, txns]) => {
+                  const incomeTxns = txns.filter(
+                    (tx) =>
+                      tx.type === 'income' &&
+                      (incomeCategoryFilter === '' || tx.category === incomeCategoryFilter)
+                  );
+                  const total = incomeTxns.reduce((sum, tx) => sum + tx.amount, 0);
+                  return (
+                    <div key={`income-${category}`} className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-1">{category}</h3>
+                      <p className="text-sm text-gray-500 mb-2">
+                        Total in {category}: €{total.toFixed(2)}
+                      </p>
+                      <ul className="space-y-2">
+                        {incomeTxns.map((tx) => (
+                          <li
+                            key={tx._id}
+                            className="bg-white p-4 rounded shadow border-l-4 border-green-500 flex justify-between items-center"
+                          >
+                            <div>
+                              <p className="text-green-600 font-semibold">
+                                €{tx.amount.toFixed(2)} — {tx.description}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {new Date(tx.date).toLocaleString()}
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+            </div>
+
+            {/* EXPENSES GROUP */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-2xl font-bold text-red-700">Expenses</h2>
+                <select
+                  value={expenseCategoryFilter}
+                  onChange={(e) => setExpenseCategoryFilter(e.target.value)}
+                  className="px-3 py-1 border rounded bg-white text-gray-800"
+                >
+                  <option value="">All Categories</option>
+                  <option value="Groceries">Groceries</option>
+                  <option value="Bills">Bills</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {Object.entries(groupedByCategory)
+                .filter(([_, txns]) =>
+                  txns.some(
+                    (tx) =>
+                      tx.type === 'expense' &&
+                      (expenseCategoryFilter === '' || tx.category === expenseCategoryFilter)
+                  )
+                )
+                .map(([category, txns]) => {
+                  const expenseTxns = txns.filter(
+                    (tx) =>
+                      tx.type === 'expense' &&
+                      (expenseCategoryFilter === '' || tx.category === expenseCategoryFilter)
+                  );
+                  const total = expenseTxns.reduce((sum, tx) => sum + tx.amount, 0);
+                  return (
+                    <div key={`expense-${category}`} className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-1">{category}</h3>
+                      <p className="text-sm text-gray-500 mb-2">
+                        Total in {category}: €{total.toFixed(2)}
+                      </p>
+                      <ul className="space-y-2">
+                        {expenseTxns.map((tx) => (
+                          <li
+                            key={tx._id}
+                            className="bg-white p-4 rounded shadow border-l-4 border-red-500 flex justify-between items-center"
+                          >
+                            <div>
+                              <p className="text-red-600 font-semibold">
+                                €{tx.amount.toFixed(2)} — {tx.description}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {new Date(tx.date).toLocaleString()}
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
         )}
       </div>
     </>
