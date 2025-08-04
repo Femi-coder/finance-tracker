@@ -36,8 +36,8 @@ export default function IncomePage() {
     <>
       <Navbar />
       <div className="p-6 bg-gray-100 min-h-screen">
-        <h1 className="text-2xl font-bold mb-2 text-black-600">Income Transactions</h1>
-        <p className="mb-4 font-semibold text-black-700">Total Income: €{totalIncome}</p>
+        <h1 className="text-2xl font-bold mb-2 text-gray-800">Income Transactions</h1>
+        <p className="mb-4 font-semibold text-gray-700">Total Income: €{totalIncome}</p>
 
         {loading ? (
           <p>Loading...</p>

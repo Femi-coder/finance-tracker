@@ -64,8 +64,8 @@ export default function ExpensesPage() {
     <>
       <Navbar />
       <div className="p-6 bg-gray-100 min-h-screen">
-        <h1 className="text-2xl font-bold mb-2 text-black-600">Expense Transactions</h1>
-        <p className="mb-4 font-semibold text-black-700">Total Expenses: €{totalExpenses}</p>
+        <h1 className="text-2xl font-bold mb-2 text-gray-800">Expense Transactions</h1>
+        <p className="mb-4 font-semibold text-gray-700">Total Expenses: €{totalExpenses}</p>
 
         {loading ? (
           <p>Loading...</p>
