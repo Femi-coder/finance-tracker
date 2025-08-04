@@ -28,7 +28,7 @@ export default function RegisterPage() {
       <Navbar />
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="bg-white p-6 rounded shadow-md w-full max-w-sm">
-          <h1 className="text-2xl font-bold mb-6 text-center text-black-600">Register</h1>
+          <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Register</h1>
           <form onSubmit={handleRegister} className="space-y-4">
             <input
               type="email"
@@ -36,7 +36,7 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
               required
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-2 border rounded bg-white text-gray-800"
             />
             <input
               type="password"
@@ -44,7 +44,7 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               required
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-2 border rounded bg-white text-gray-800"
             />
             <button
               type="submit"
